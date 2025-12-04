@@ -8,8 +8,7 @@ const CONFIG = {
         dark: '#1e1b4b',
         primary: '#8a5cf6',
         accent: '#ec4899'
-    },
-    mobileBreakpoint: 768
+    }
 };
 
 // ===== СОСТОЯНИЕ ПРИЛОЖЕНИЯ =====
@@ -22,8 +21,7 @@ const state = {
     todayCount: 0,
     totalSaved: 0,
     lastGenerated: null,
-    theme: 'dark',
-    isMobile: false
+    theme: 'dark'
 };
 
 // ===== DOM ЭЛЕМЕНТЫ =====
@@ -72,62 +70,28 @@ const elements = {
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', () => {
-    detectDeviceType();
+    // Загружаем состояние
     loadState();
+    
+    // Инициализация
     initEventListeners();
     initParticles();
     updateStatisticsDisplay();
-    showWelcomeNotification();
-    setupMobileOptimizations();
+    
+    // Показываем приветственное уведомление с задержкой
+    setTimeout(() => {
+        showWelcomeNotification();
+    }, 1500);
+    
+    // Устанавливаем настройки по умолчанию
+    setDefaultSettings();
 });
-
-// ===== ОПРЕДЕЛЕНИЕ ТИПА УСТРОЙСТВА =====
-function detectDeviceType() {
-    state.isMobile = window.innerWidth <= CONFIG.mobileBreakpoint;
-    // Адаптируем размер QR-кода для мобильных
-    if (state.isMobile) {
-        state.qrSize = 256; // Меньший размер по умолчанию для мобильных
-        const smallSizeInput = document.querySelector('input[name="qr-size"][value="256"]');
-        if (smallSizeInput) {
-            smallSizeInput.checked = true;
-        }
-    }
-}
-
-// ===== МОБИЛЬНЫЕ ОПТИМИЗАЦИИ =====
-function setupMobileOptimizations() {
-    // Предотвращаем масштабирование при фокусе на поле ввода
-    elements.qrText.addEventListener('focus', () => {
-        if (state.isMobile) {
-            setTimeout(() => {
-                window.scrollTo(0, 0);
-            }, 100);
-        }
-    });
-
-    // Закрываем клавиатуру по клику вне поля ввода
-    document.addEventListener('click', (e) => {
-        if (state.isMobile && e.target !== elements.qrText) {
-            elements.qrText.blur();
-        }
-    });
-
-    // Адаптируем размер QR-кода при изменении ориентации
-    window.addEventListener('resize', () => {
-        detectDeviceType();
-    });
-
-    // Предотвращаем скролл страницы при прокрутке внутри textarea
-    elements.qrText.addEventListener('touchmove', (e) => {
-        e.stopPropagation();
-    }, { passive: true });
-}
 
 // ===== УПРАВЛЕНИЕ СОСТОЯНИЕМ =====
 function loadState() {
-    const saved = localStorage.getItem(CONFIG.storageKey);
-    if (saved) {
-        try {
+    try {
+        const saved = localStorage.getItem(CONFIG.storageKey);
+        if (saved) {
             const data = JSON.parse(saved);
             state.generatedCount = data.generatedCount || 0;
             state.totalSaved = data.totalSaved || 0;
@@ -138,9 +102,9 @@ function loadState() {
             state.todayCount = data.lastDate === today ? (data.todayCount || 0) : 0;
 
             applyTheme();
-        } catch (e) {
-            console.error('Ошибка загрузки состояния:', e);
         }
+    } catch (e) {
+        console.error('Ошибка загрузки состояния:', e);
     }
 }
 
@@ -167,20 +131,12 @@ function applyTheme() {
     elements.body.setAttribute('data-theme', state.theme);
     const icon = elements.themeToggle.querySelector('i');
     icon.className = state.theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    document.querySelector('meta[name="theme-color"]').setAttribute('content', state.theme === 'dark' ? '#0a0a1a' : '#f1f5f9');
 }
 
 function toggleTheme() {
     state.theme = state.theme === 'dark' ? 'light' : 'dark';
     applyTheme();
     saveState();
-    
-    // Анимация кнопки
-    elements.themeToggle.style.transform = 'scale(0.9)';
-    setTimeout(() => {
-        elements.themeToggle.style.transform = 'scale(1)';
-    }, 150);
-    
     showNotification('Тема изменена', `Активирована ${state.theme === 'dark' ? 'тёмная' : 'светлая'} тема`, 'info');
 }
 
@@ -189,7 +145,7 @@ function initParticles() {
     const container = document.getElementById('particles');
     if (!container) return;
 
-    const particleCount = state.isMobile ? 20 : 40;
+    const particleCount = window.innerWidth < 768 ? 20 : 30;
 
     for (let i = 0; i < particleCount; i++) {
         createParticle(container);
@@ -200,7 +156,7 @@ function createParticle(container) {
     const particle = document.createElement('div');
     particle.className = 'particle';
 
-    const size = Math.random() * (state.isMobile ? 2 : 3) + 1;
+    const size = Math.random() * 2 + 1;
     const color = Math.random() > 0.5 ? 'var(--primary)' : 'var(--accent)';
 
     particle.style.width = `${size}px`;
@@ -215,42 +171,26 @@ function createParticle(container) {
     particle.style.top = `${y}%`;
 
     // Анимация движения
-    const duration = Math.random() * 30 + 20;
+    const duration = Math.random() * 20 + 15;
     const delay = Math.random() * 5;
 
-    particle.style.animation = `
-        floatParticle ${duration}s infinite ease-in-out ${delay}s
-    `;
+    particle.style.animation = `float ${duration}s infinite ease-in-out ${delay}s`;
 
     container.appendChild(particle);
 
     // Удаляем старые частицы
-    if (container.children.length > 100) {
+    if (container.children.length > 50) {
         container.removeChild(container.firstChild);
     }
 }
-
-// Добавляем CSS для анимации частиц
-const particleStyle = document.createElement('style');
-particleStyle.textContent = `
-    @keyframes floatParticle {
-        0%, 100% { transform: translate(0, 0) rotate(0deg); }
-        25% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(90deg); }
-        50% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(180deg); }
-        75% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(270deg); }
-    }
-`;
-document.head.appendChild(particleStyle);
 
 // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 function initEventListeners() {
     // Генерация
     elements.generateBtn.addEventListener('click', generateQRCode);
     elements.qrText.addEventListener('input', handleTextInput);
-    
-    // Генерация по Enter (с Ctrl/Cmd)
-    elements.qrText.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    elements.qrText.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             generateQRCode();
         }
@@ -281,13 +221,6 @@ function initEventListeners() {
     // Закрытие модального окна по клику вне его
     elements.infoModal.addEventListener('click', (e) => {
         if (e.target === elements.infoModal) {
-            hideModal(elements.infoModal);
-        }
-    });
-
-    // Закрытие модального окна по Escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && elements.infoModal.classList.contains('active')) {
             hideModal(elements.infoModal);
         }
     });
@@ -332,24 +265,9 @@ function initEventListeners() {
         });
     });
 
-    // Свайп для закрытия модального окна на мобильных
-    if (state.isMobile) {
-        let startY;
-        elements.infoModal.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-        });
-        
-        elements.infoModal.addEventListener('touchmove', (e) => {
-            if (!startY) return;
-            
-            const currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-            
-            if (diff > 100) { // Свайп вниз на 100px
-                hideModal(elements.infoModal);
-            }
-        });
-    }
+    // Обработка касаний для предотвращения лагов
+    document.addEventListener('touchstart', function() {}, {passive: true});
+    document.addEventListener('touchmove', function() {}, {passive: true});
 }
 
 function handleTextInput() {
@@ -362,14 +280,14 @@ function handleTextInput() {
         return;
     }
 
-    // Автогенерация при вводе URL (только на ПК)
-    if (!state.isMobile && text.trim() && (text.includes('http') || text.includes('.') || text.length > 20)) {
+    // Автогенерация при вводе URL
+    if (text.trim() && (text.includes('http') || text.includes('.') || text.length > 20)) {
         clearTimeout(window.typingTimer);
         window.typingTimer = setTimeout(() => {
             if (text.trim()) {
                 generateQRCode();
             }
-        }, 800);
+        }, 1000);
     }
 }
 
@@ -394,21 +312,13 @@ function generateQRCode(force = false) {
             elements.qrText.focus();
             elements.qrText.classList.add('shake');
             setTimeout(() => elements.qrText.classList.remove('shake'), 500);
-            
-            // Вибрация на мобильных
-            if (state.isMobile && navigator.vibrate) {
-                navigator.vibrate(100);
-            }
         }
         return;
     }
 
     // Валидация URL
     if (text.includes('http') && !isValidUrl(text) && !text.startsWith('http')) {
-        if (state.isMobile) {
-            showNotification('Внимание', 'Текст похож на ссылку, но не начинается с http/https', 'warning');
-            return;
-        } else if (!confirm('Текст похож на ссылку, но не начинается с http/https. Все равно сгенерировать?')) {
+        if (!confirm('Текст похож на ссылку, но не начинается с http/https. Все равно сгенерировать?')) {
             return;
         }
     }
@@ -430,17 +340,11 @@ function generateQRCode(force = false) {
         // Настройки цвета
         const colorDark = CONFIG.colors[state.qrColor] || CONFIG.colors.dark;
 
-        // Адаптируем размер для мобильных
-        let size = state.qrSize;
-        if (state.isMobile && size > 256) {
-            size = 256;
-        }
-
         // Создаем новый QR-код
         state.qrInstance = new QRCode(elements.qrcodeDiv, {
             text: text,
-            width: size,
-            height: size,
+            width: Math.min(state.qrSize, window.innerWidth - 100),
+            height: Math.min(state.qrSize, window.innerWidth - 100),
             colorDark: colorDark,
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
@@ -465,19 +369,12 @@ function generateQRCode(force = false) {
                 // Увеличиваем счетчики
                 incrementCounters();
                 showSuccessNotification();
-                
-                // Прокручиваем к QR-коду на мобильных
-                if (state.isMobile) {
-                    setTimeout(() => {
-                        elements.qrcodeDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                }
             } else {
                 throw new Error('Canvas не создан');
             }
 
             showLoading(false);
-        }, 300);
+        }, 200);
 
     } catch (error) {
         console.error('Ошибка генерации QR-кода:', error);
@@ -498,11 +395,6 @@ function generateQRCode(force = false) {
         `;
 
         showNotification('Ошибка', 'Не удалось сгенерировать QR-код', 'error');
-        
-        // Вибрация на мобильных
-        if (state.isMobile && navigator.vibrate) {
-            navigator.vibrate([100, 50, 100]);
-        }
     }
 }
 
@@ -608,11 +500,6 @@ function downloadQRCode() {
         }, 2000);
 
         showNotification('Успешно', 'QR-код скачан', 'success');
-        
-        // Вибрация на мобильных
-        if (state.isMobile && navigator.vibrate) {
-            navigator.vibrate(50);
-        }
 
     } catch (error) {
         console.error('Ошибка скачивания:', error);
@@ -626,69 +513,33 @@ function copyQRCode() {
         return;
     }
 
-    // Для мобильных устройств используем простой метод
-    if (state.isMobile) {
-        const dataURL = state.currentCanvas.toDataURL();
-        const tempInput = document.createElement('input');
-        tempInput.value = dataURL;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        tempInput.setSelectionRange(0, 99999);
-        
-        try {
-            document.execCommand('copy');
-            showNotification('Скопировано', 'Ссылка на QR-код скопирована', 'success');
-            
-            // Вибрация на мобильных
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
-        } catch (e) {
-            showNotification('Ошибка', 'Не удалось скопировать QR-код', 'error');
-        }
-        
-        document.body.removeChild(tempInput);
-        return;
-    }
+    // Для мобильных устройств используем простой способ
+    if (navigator.clipboard && window.isSecureContext) {
+        state.currentCanvas.toBlob(blob => {
+            const item = new ClipboardItem({ 'image/png': blob });
 
-    // Для ПК используем Clipboard API
-    state.currentCanvas.toBlob(blob => {
-        const item = new ClipboardItem({ 'image/png': blob });
+            navigator.clipboard.write([item]).then(() => {
+                // Анимация кнопки
+                const originalText = elements.copyBtn.innerHTML;
+                elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                elements.copyBtn.style.color = 'var(--success)';
 
-        navigator.clipboard.write([item]).then(() => {
-            // Анимация кнопки
-            const originalText = elements.copyBtn.innerHTML;
-            elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-            elements.copyBtn.style.color = 'var(--success)';
+                setTimeout(() => {
+                    elements.copyBtn.innerHTML = originalText;
+                    elements.copyBtn.style.color = '';
+                }, 2000);
 
-            setTimeout(() => {
-                elements.copyBtn.innerHTML = originalText;
-                elements.copyBtn.style.color = '';
-            }, 2000);
+                showNotification('Скопировано', 'QR-код скопирован в буфер обмена', 'success');
 
-            showNotification('Скопировано', 'QR-код скопирован в буфер обмена', 'success');
-
-        }).catch(err => {
-            console.error('Ошибка копирования:', err);
-            
-            // Fallback для браузеров без поддержки Clipboard API
-            const dataURL = state.currentCanvas.toDataURL();
-            const tempInput = document.createElement('input');
-            tempInput.value = dataURL;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            tempInput.setSelectionRange(0, 99999);
-
-            try {
-                document.execCommand('copy');
-                showNotification('Скопировано', 'Ссылка на QR-код скопирована', 'info');
-            } catch (e) {
-                showNotification('Ошибка', 'Не удалось скопировать QR-код', 'error');
-            }
-
-            document.body.removeChild(tempInput);
+            }).catch(err => {
+                console.error('Ошибка копирования:', err);
+                showNotification('Информация', 'Используйте кнопку скачивания', 'info');
+            });
         });
-    });
+    } else {
+        // Fallback для старых браузеров
+        showNotification('Информация', 'Нажмите кнопку скачивания для сохранения QR-кода', 'info');
+    }
 }
 
 async function shareQRCode() {
@@ -705,15 +556,14 @@ async function shareQRCode() {
             await navigator.share({
                 files: [file],
                 title: 'Мой QR-код',
-                text: 'Создано с помощью SKQR Generator'
+                text: 'Создано с помощью QR Generator'
             });
 
             showNotification('Успешно', 'QR-код опубликован', 'success');
 
         } catch (error) {
             if (error.name !== 'AbortError') {
-                console.error('Ошибка публикации:', error);
-                showNotification('Отменено', 'Публикация отменена', 'info');
+                showNotification('Информация', 'Публикация отменена', 'info');
             }
         }
     } else {
@@ -740,11 +590,6 @@ function updateStatisticsDisplay() {
 }
 
 function updateSizeDisplay() {
-    const sizeLabels = {
-        '256': 'Маленький',
-        '350': 'Средний',
-        '450': 'Большой'
-    };
     // Обновим позже в updateQRInfo
 }
 
@@ -784,32 +629,14 @@ function showNotification(title, message, type = 'info') {
             }, 300);
         }
     }, 3000);
-    
-    // Озвучиваем уведомления для скринридеров
-    const ariaLive = document.createElement('div');
-    ariaLive.className = 'sr-only';
-    ariaLive.setAttribute('aria-live', 'assertive');
-    ariaLive.textContent = `${title}: ${message}`;
-    document.body.appendChild(ariaLive);
-    setTimeout(() => ariaLive.remove(), 100);
 }
 
 function showWelcomeNotification() {
-    setTimeout(() => {
-        if (state.isMobile) {
-            showNotification(
-                'Добро пожаловать!',
-                'Коснитесь поля ввода или выберите пример для создания QR-кода',
-                'info'
-            );
-        } else {
-            showNotification(
-                'Добро пожаловать!',
-                'Введите текст или ссылку для создания QR-кода',
-                'info'
-            );
-        }
-    }, 1000);
+    showNotification(
+        'Добро пожаловать!',
+        'Введите текст или ссылку для создания QR-кода',
+        'info'
+    );
 }
 
 function showSuccessNotification() {
@@ -822,32 +649,17 @@ function showSuccessNotification() {
 
     const message = notifications[Math.floor(Math.random() * notifications.length)];
     showNotification('Отлично!', message, 'success');
-    
-    // Короткая вибрация на мобильных при успешной генерации
-    if (state.isMobile && navigator.vibrate) {
-        navigator.vibrate(50);
-    }
 }
 
 // ===== МОДАЛЬНЫЕ ОКНА =====
 function showModal(modal) {
     modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    
-    // Фокусируемся на кнопке закрытия
-    setTimeout(() => {
-        modal.querySelector('.modal-close').focus();
-    }, 100);
 }
 
 function hideModal(modal) {
     modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-    
-    // Возвращаем фокус на кнопку информации
-    elements.infoBtn.focus();
 }
 
 // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
@@ -863,11 +675,10 @@ function isValidUrl(string) {
 // ===== ИНИЦИАЛИЗАЦИЯ НАСТРОЕК ПО УМОЛЧАНИЮ =====
 function setDefaultSettings() {
     // Устанавливаем выбранный размер
-    const defaultSize = state.isMobile ? 256 : CONFIG.defaultSize;
-    const defaultSizeInput = document.querySelector(`input[name="qr-size"][value="${defaultSize}"]`);
+    const defaultSizeInput = document.querySelector(`input[name="qr-size"][value="${CONFIG.defaultSize}"]`);
     if (defaultSizeInput) {
         defaultSizeInput.checked = true;
-        state.qrSize = defaultSize;
+        state.qrSize = CONFIG.defaultSize;
     }
 
     // Устанавливаем выбранный цвет
@@ -890,18 +701,24 @@ function setDefaultSettings() {
     elements.shareBtn.disabled = true;
 }
 
-// Вызываем установку настроек по умолчанию после загрузки
-setDefaultSettings();
+// ===== ОПТИМИЗАЦИЯ ДЛЯ МОБИЛЬНЫХ =====
+// Предотвращаем зум при двойном тапе
+document.addEventListener('touchstart', function(event) {
+    if (event.touches.length > 1) {
+        event.preventDefault();
+    }
+}, { passive: false });
 
-// ===== ОБРАБОТКА ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
-let resizeTimer;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-        detectDeviceType();
-        // Перегенерируем QR-код с новым размером, если он есть
-        if (state.currentCanvas && elements.qrText.value.trim()) {
-            generateQRCode();
-        }
-    }, 250);
-});
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(event) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
+
+// Фикс для iOS и Android
+if ('ontouchstart' in window) {
+    document.documentElement.style.cursor = 'pointer';
+}
