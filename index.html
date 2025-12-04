@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SKQR Generator | Современный генератор QR-кодов</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0a1a">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<!-- Анимированные фоновые элементы -->
+<div class="bg-elements">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
+    <div class="particles-container" id="particles"></div>
+</div>
+
+<div class="container">
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-qrcode logo-icon"></i>
+            <div class="logo-text">
+                <h1>SKQR Generator</h1>
+                <span class="logo-subtitle">Генератор</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" title="Сменить тему" aria-label="Сменить тему">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button class="info-btn" id="info-btn" title="Информация" aria-label="Информация">
+                <i class="fas fa-info-circle"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="hero-section">
+            <h2 class="hero-title">
+                <span class="gradient-text">Создавайте красивые</span>
+                <span class="hero-subtitle">QR-коды</span>
+            </h2>
+            <p class="hero-description">
+                Просто введите ссылку или текст, и мгновенно получите элегантный QR-код
+                в современном стеклянном стиле. Бесплатно, безопасно, без регистрации.
+            </p>
+        </div>
+
+        <div class="app-grid">
+            <!-- Панель ввода -->
+            <section class="input-section glass-panel">
+                <div class="section-header">
+                    <i class="fas fa-keyboard section-icon"></i>
+                    <h3>Создание QR-кода</h3>
+                </div>
+
+                <div class="input-group">
+                    <label for="qr-text" class="input-label">
+                        <i class="fas fa-link"></i>
+                        <span>Ссылка или текст</span>
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-pen input-icon"></i>
+                        <textarea
+                                id="qr-text"
+                                class="text-input"
+                                placeholder="Введите ссылку (https://example.com) или любой текст..."
+                                rows="4"
+                                aria-label="Поле для ввода текста или ссылки"
+                        ></textarea>
+                    </div>
+                    <div class="input-hint">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Поддерживаются ссылки, текст, контакты, Wi-Fi данные</span>
+                    </div>
+                </div>
+
+                <!-- Настройки QR-кода -->
+                <div class="settings-panel">
+                    <div class="settings-header">
+                        <i class="fas fa-sliders-h"></i>
+                        <h4>Настройки QR-кода</h4>
+                    </div>
+
+                    <div class="size-controls">
+                        <div class="size-option">
+                            <input type="radio" id="size-small" name="qr-size" value="256" checked>
+                            <label for="size-small" class="size-label" aria-label="Маленький размер">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span class="size-name">Маленький</span>
+                                <span class="size-details">256×256px</span>
+                            </label>
+                        </div>
+                        <div class="size-option">
+                            <input type="radio" id="size-medium" name="qr-size" value="350">
+                            <label for="size-medium" class="size-label" aria-label="Средний размер">
+                                <i class="fas fa-tablet-alt"></i>
+                                <span class="size-name">Средний</span>
+                                <span class="size-details">350×350px</span>
+                            </label>
+                        </div>
+                        <div class="size-option">
+                            <input type="radio" id="size-large" name="qr-size" value="450">
+                            <label for="size-large" class="size-label" aria-label="Большой размер">
+                                <i class="fas fa-desktop"></i>
+                                <span class="size-name">Большой</span>
+                                <span class="size-details">450×450px</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- <div class="color-controls">
+                        <div class="color-option">
+                            <input type="radio" id="color-dark" name="qr-color" value="dark" checked>
+                            <label for="color-dark" class="color-label" aria-label="Тёмный цвет">
+                                <div class="color-preview dark"></div>
+                                <span class="size-name">Тёмный</span>
+                            </label>
+                        </div>
+                        <div class="color-option">
+                            <input type="radio" id="color-primary" name="qr-color" value="primary">
+                            <label for="color-primary" class="color-label" aria-label="Основной цвет">
+                                <div class="color-preview primary"></div>
+                                <span class="size-name">Основной</span>
+                            </label>
+                        </div>
+                        <div class="color-option">
+                            <input type="radio" id="color-accent" name="qr-color" value="accent">
+                            <label for="color-accent" class="color-label" aria-label="Акцентный цвет">
+                                <div class="color-preview accent"></div>
+                                <span class="size-name">Акцентный</span>
+                            </label>
+                        </div>
+                    </div>
+                </div> -->
+
+                <button id="generate-btn" class="generate-btn" aria-label="Сгенерировать QR-код">
+                    <i class="fas fa-bolt"></i>
+                    <span>Сгенерировать QR-код</span>
+                </button>
+
+                <!-- Быстрые примеры -->
+                <div class="quick-examples">
+                    <p class="examples-title">
+                        <i class="fas fa-bolt"></i>
+                        <span>Быстрые примеры</span>
+                    </p>
+                    <div class="examples-grid">
+                        <button class="example-btn" data-text="https://github.com" aria-label="Пример: GitHub">
+                            <i class="fab fa-github"></i>
+                            <span>GitHub</span>
+                        </button>
+                        <button class="example-btn" data-text="https://www.youtube.com" aria-label="Пример: YouTube">
+                            <i class="fab fa-youtube"></i>
+                            <span>YouTube</span>
+                        </button>
+                        <button class="example-btn" data-text="Привет! Это тестовый QR-код" aria-label="Пример: Текст">
+                            <i class="fas fa-comment"></i>
+                            <span>Текст</span>
+                        </button>
+                        <button class="example-btn" data-text="WIFI:S:MyNetwork;T:WPA2;P:Password123;;" aria-label="Пример: Wi-Fi">
+                            <i class="fas fa-wifi"></i>
+                            <span>Wi-Fi</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Панель результата -->
+            <section class="output-section glass-panel">
+                <div class="section-header">
+                    <i class="fas fa-qrcode section-icon"></i>
+                    <h3>Ваш QR-код</h3>
+                </div>
+
+                <div class="qr-container">
+                    <div class="qr-display">
+                        <div id="qrcode" class="qr-code" aria-live="polite" aria-atomic="true"></div>
+                        <div id="placeholder" class="qr-placeholder">
+                            <div class="placeholder-icon">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <h4>QR-код не сгенерирован</h4>
+                            <p>Введите текст или ссылку и нажмите "Сгенерировать"</p>
+                            <div class="placeholder-hint">
+                                <i class="fas fa-hand-point-up"></i>
+                                <span>Нажмите на быстрые примеры для быстрого старта</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qr-info" id="qr-info">
+                        <div class="info-item">
+                            <i class="fas fa-ruler"></i>
+                            <div>
+                                <span class="info-label">Размер</span>
+                                <span class="info-value" id="size-value">-</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-palette"></i>
+                            <div>
+                                <span class="info-label">Цвет</span>
+                                <span class="info-value" id="color-value">-</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-calendar"></i>
+                            <div>
+                                <span class="info-label">Создан</span>
+                                <span class="info-value" id="time-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qr-actions" id="qr-actions">
+                        <button id="download-btn" class="download-btn" disabled aria-label="Скачать QR-код">
+                            <i class="fas fa-download"></i>
+                            <span>Скачать PNG</span>
+                        </button>
+                        <div class="action-buttons-row">
+                            <button class="share-btn" id="copy-btn" disabled title="Копировать в буфер" aria-label="Копировать QR-код">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="share-btn" id="share-btn" disabled title="Поделиться" aria-label="Поделиться QR-кодом">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <button class="share-btn" id="refresh-btn" title="Обновить" aria-label="Обновить QR-код">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Статистика -->
+                <div class="stats-panel">
+                    <div class="stat-item">
+                        <div class="stat-value" id="generated-count">0</div>
+                        <div class="stat-label">Сгенерировано</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="today-count">0</div>
+                        <div class="stat-label">Сегодня</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-saved">0</div>
+                        <div class="stat-label">Скачано</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Преимущества -->
+        <div class="features-section">
+            <h3 class="section-title">Почему выбирают SKQR</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon security">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Полная безопасность</h4>
+                    <p>Все данные обрабатываются локально в вашем браузере, никуда не передаются</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon speed">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4>Мгновенная генерация</h4>
+                    <p>QR-коды создаются в реальном времени без задержек и ожидания</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon design">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h4>Стильный дизайн</h4>
+                    <p>Современный стиль с анимациями и тонкими эффектами</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon free">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h4>Бесплатно навсегда</h4>
+                    <p>Все функции доступны бесплатно, без подписок и ограничений</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Информационное модальное окно -->
+    <div class="modal-overlay" id="info-modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3 id="modal-title"><i class="fas fa-info-circle"></i> О генераторе QR-кодов</h3>
+                <button class="modal-close" id="modal-close" aria-label="Закрыть">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>SKQR Generator — современный инструмент для создания QR-кодов с эффектом стеклянного дизайна.</p>
+
+                <div class="modal-features">
+                    <h4><i class="fas fa-star"></i> Возможности:</h4>
+                    <ul>
+                        <li>Генерация QR-кодов из любых текстов и ссылок</li>
+                        <li>Настройка размера QR-кода</li>
+                        <li>Скачивание в высоком качестве (PNG)</li>
+                        <li>Копирование в буфер обмена</li>
+                        <li>Темная/светлая тема сайта</li>
+                        <li>Работа оффлайн после загрузки</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-qrcode"></i>
+                <span>SKQR Generator</span>
+            </div>
+            <p class="footer-text">
+                &copy; 2025 | Все права защищены.
+                <span class="footer-hint">Работает полностью в браузере</span>
+            </p>
+            <div class="footer-links">
+                <a href="#" class="footer-link" id="privacy-btn">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Конфиденциальность</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Уведомления -->
+<div class="notification-container" id="notification-container" aria-live="polite" aria-atomic="true"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
